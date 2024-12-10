@@ -13,9 +13,7 @@ F_n = \begin{cases}
 ```
 
 ## Video
-[Python laid waste to my C++!](https://youtu.be/FE_aqRrVmSA)
-
-[![Python laid waste to my C++!](https://img.youtube.com/vi/FE_aqRrVmSA/0.jpg)](https://youtu.be/FE_aqRrVmSA)
+[![Python laid waste to my C++!](https://img.youtube.com/vi/02rh1NjJLI4/0.jpg)](https://youtu.be/02rh1NjJLI4)
 
 ## Usage
 
