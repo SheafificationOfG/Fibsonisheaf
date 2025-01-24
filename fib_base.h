@@ -8,8 +8,8 @@
 
 #ifdef DEBUG
 #include <stdio.h>
-#   define printstr(s) (void)fputs(s, stderr)
-#   define printmem(expr, len)\
+#   define debug(s) (void)fputs(s, stderr)
+#   define debugmem(expr, len)\
     {\
         uint8_t *__num = (void *)(expr);\
         long long unsigned __len = (len);\
@@ -20,19 +20,24 @@
         }\
         while (__len);\
     }
-#   define debug(format, ...) (void)fprintf(stderr, "# %s:%d: " format, __FILE__, __LINE__, __VA_ARGS__)
-#   define debugmem(expr, len)\
-    debug("%s (%s = %llu)\n", #expr, #len, (long long unsigned)len);\
-    printmem(expr, len);\
-    printstr("\n")
+#   define log(format, ...) (void)fprintf(stderr, "# %s:%d: " format, __FILE__, __LINE__, __VA_ARGS__)
+#   define logmem(expr, len)\
+    log("%s (%s = %llu)\n", #expr, #len, (long long unsigned)len);\
+    debugmem(expr, len);\
+    debug("\n")
 #else
-#   define printstr(...)
-#   define printmem(...)
 #   define debug(...)
 #   define debugmem(...)
+#   define log(...)
+#   define logmem(...)
 #endif
 
+struct number {
+    void *bytes;
+    size_t length;
+};
+
 // See impl/README.md for an explanation of the function's expected behaviour.
-void fibonacci(uint64_t index, void **result, size_t *length);
+struct number fibonacci(uint64_t index);
 
 #endif//FIB_BASE_H

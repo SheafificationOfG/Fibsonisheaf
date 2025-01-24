@@ -3,13 +3,13 @@
 All `.c` files here implement backend for `fib_base.h` in the root directory, providing a definition for the main function
 
 ```c
-void fibonacci(uint64_t index, void **result, size_t *length);
+struct number fibonacci(uint64_t);
 ```
 
-Implementations of this function have the following expectations.
-1. `*result` points to heap-allocated memory, storing the `index`th Fibonacci number in *little-endian*; in particular the first byte pointed to by `*result` should be the least significant byte of the `index`th Fibonacci number.
-1. `*length` indicates the number of bytes in the block allocated in `*result` dedicated to storing the `index`th Fibonacci number. Leading zeroes are permissible.
-1. The responsibility is given to the caller to free the memory allocated in `*result`.
+Implementations of this function have the following expectations for the returned number `num`.
+1. `num.bytes` points to heap-allocated memory, storing the `index`th Fibonacci number in *little-endian*; in particular, `*(uint8_t *)num.bytes` should be the least significant byte of the `index`th Fibonacci number.
+1. `num.length` indicates the number of bytes in the block allocated in `num.bytes` dedicated to storing the `index`th Fibonacci number. Leading zeroes are permissible.
+1. The responsibility is given to the caller to free the memory allocated in `num.bytes`.
 
 ## Debugging
 
@@ -31,13 +31,13 @@ python3 -m scripts.fibonappy $N | python3 scripts/group_hex.py -o $python_file
 //// all debug info is dumped to stderr ////
 
 /* print string (no newline) */
-void printstr(char const *str);
+void debug(char const *str);
 /* print hex repr of memory slice, with leading 0x */
-void printmem(void *addr, size_t nbytes);
-/* pretty debug message */
-void debug(char const *format, /* fmt args */ ...);
-/* pretty memdump */
 void debugmem(void *addr, size_t nbytes);
+/* pretty debug message */
+void log(char const *format, /* fmt args */ ...);
+/* pretty memdump */
+void logmem(void *addr, size_t nbytes);
 ```
 To enable this macro, build with `DEFINES="DEBUG"`.
 

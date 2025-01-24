@@ -12,8 +12,11 @@ F_n = \begin{cases}
 \end{cases}
 ```
 
-## Video
+## Videos
+
 [![Python laid waste to my C++!](https://img.youtube.com/vi/02rh1NjJLI4/0.jpg)](https://youtu.be/02rh1NjJLI4)
+
+[![I'm not sorry for switching to C](https://img.youtube.com/vi/LXm6ygZ3h7A/0.jpg)](https://youtu.be/LXm6ygZ3h7A)
 
 ## Usage
 
@@ -44,7 +47,7 @@ If you don't jive with hex, you can convert the hex output with `scripts/hex2dec
 
 ```bash
 ./bin/$(algo).hex.out $(fibonacci_index) | python3 scripts/hex2dec.py $(output_file)
-# If output_file is not provided, output is directed to stdout½F½F
+# If output_file is not provided, output is directed to stdout
 ```
 
 By default, `hex2dec` prints out at most 32 significant digits.
@@ -72,9 +75,7 @@ To plot the data, a prerequisite is a configuration JSON file, having the follow
     "Name of algorithm (for legend)": {
         "path": "data/$(algo).dat",
         "colour": "$(some_matplotlib_colour)",
-        // there are also some optional params
     },
-    // ...
 }
 ```
 
@@ -104,6 +105,8 @@ The project includes the following implementations.
 |:---------:|:----------------:|:-------:|
 | [Naive](#naive) | `naive.c` | $`\Omega(\exp(n))`$ |
 | ["Linear"](#linear) | `linear.c` | $`O(n^2)`$ |
+| [Fast exponentiation](#fast-exponentiation) | `fastexp{,2d}.c` | $`O(n^2)`$ |
+| [Fast squaring](#fast-squaring) | `fastsquaring.c` | $`O(n^2)`$ |
 
 ## Naive
 
@@ -135,3 +138,152 @@ def linear(n):
 > [!TIP]
 > Although the algorithm is called "linear" (referring to the number of iterations), the algorithm is $\Theta(n^2)$ overall.
 
+## Fast exponentiation
+
+Based on the following identity:
+
+```math
+\begin{bmatrix}
+    0 & 1 \\ 1 & 1
+\end{bmatrix}^n =
+\begin{bmatrix}
+    F_{n-1} & F_n \\ F_n & F_{n+1}
+\end{bmatrix}
+```
+we compute $`F_n`$ using the $`O(\log n)`$ fast exponentiation algorithm.
+
+Since all matrices involved are symmetric, we can represent these matrices as triples, with the following "multiplication":
+
+```math
+\begin{bmatrix}
+    a \\ b \\ c
+\end{bmatrix}
+\boxtimes
+\begin{bmatrix}
+    a' \\ b' \\ c'
+\end{bmatrix}
+:=
+\begin{bmatrix}
+    aa' + bb' \\
+    ab' + bc' \\
+    bb' + cc'
+\end{bmatrix}
+```
+
+The multiplication of integers is achieved with the simple $`O(n^2)`$ grade-school algorithm.
+However, we add some simple modifications to take advantage of the nature of our products.
+
+This "multiplication" is performed in three fused steps, as suggested by the expansion:
+
+```math
+\begin{bmatrix}
+    a \\ b \\ c
+\end{bmatrix}
+\boxtimes
+\begin{bmatrix}
+    a' \\ b' \\ c'
+\end{bmatrix}
+=
+a
+\begin{bmatrix}
+    a' \\ b' \\ ~
+\end{bmatrix}
++
+bb'
+\begin{bmatrix}
+    1 \\ ~ \\ 1
+\end{bmatrix}
++
+c'
+\begin{bmatrix}
+    ~ \\ b \\ c
+\end{bmatrix}
+```
+
+### Reducing the dimension
+
+In the [fast exponentiation](#fast-exponentiation) algorithm, the $`2\times2`$ matrices were encoded as triples to reduce redundancy, but notice that the relevant triples $`\langle a, b, c\rangle`$ still carry a bit of redundancy: we always have $`c = a + b`$.
+Therefore, we can reduce our memory footprint further by working instead with the pairs $`\langle F_{n-1}, F_n\rangle`$.
+
+Now, the "multiplication" becomes
+
+```math
+\begin{bmatrix}
+    a \\ b
+\end{bmatrix}
+\boxtimes
+\begin{bmatrix}
+    a' \\ b'
+\end{bmatrix}
+:=
+\begin{bmatrix}
+    aa' + bb' \\
+    ab' + ba' + bb'
+\end{bmatrix}
+```
+
+which we perform in three fused steps as well:
+
+```math
+\begin{bmatrix}
+    a \\ b
+\end{bmatrix}
+\boxtimes
+\begin{bmatrix}
+    a' \\ b'
+\end{bmatrix}
+=
+a
+\begin{bmatrix}
+    a' \\ b'
+\end{bmatrix}
++
+bb'
+\begin{bmatrix}
+    1 \\ 1
+\end{bmatrix}
++
+ab'
+\begin{bmatrix}
+    ~ \\ 1
+\end{bmatrix}
+```
+
+## Fast squaring
+
+This is a "bottom-up" variant of fast exponentiation, which processes the bits of the index top-down.
+As a result, the transitions for set bits are much simpler (following only a single transition step of the Fibonacci sequence), and the main computation is iterative squaring:
+
+```math
+\begin{bmatrix}
+    a \\ b
+\end{bmatrix}
+^{\boxtimes2}
+=
+\begin{bmatrix}
+    a^2 + b^2 \\ 2ab + b^2
+\end{bmatrix}
+```
+
+We perform this squaring operation in two fused steps:
+
+```math
+\begin{bmatrix}
+    a \\ b
+\end{bmatrix}
+^{\boxtimes2}
+=
+b^2
+\begin{bmatrix}
+    1 \\ 1
+\end{bmatrix}
++
+a
+\begin{bmatrix}
+    a \\ 2b
+\end{bmatrix}
+```
+
+
+<!-- objdump -Mintel -d --visualize-jumps --no-show-raw-insn --no-addresses bin.out -->
+<!-- `x86asm` gives syntax highlighting in GitHub md (but requires Intel notation) -->

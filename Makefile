@@ -2,7 +2,7 @@ DEFINES=
 FLAGS=
 OPTLEVEL=-O3
 DFLAGS=$(DEFINES:%=-D%)
-CFLAGS=-march=native $(OPTLEVEL) -fno-math-errno -Wall -Wextra $(FLAGS) $(DFLAGS)
+CFLAGS=-march=native $(OPTLEVEL) -fno-math-errno -Wall -Wextra -Wpedantic $(FLAGS) $(DFLAGS)
 ASMFLAGS=-fverbose-asm
 CC=gcc -I.
 
@@ -37,7 +37,10 @@ clean-data:
 ###############################################################################
 ## Fibonacci implementations
 IMPL = naive\
-       linear
+       linear\
+       fastexp\
+	   fastexp2d\
+	   fastsquaring
 
 .PHONY: $(IMPL:%=run-%) all-data
 all-data: $(IMPL:%=$(DATA_DIR)/%.dat)

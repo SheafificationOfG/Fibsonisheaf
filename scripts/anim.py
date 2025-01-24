@@ -37,7 +37,7 @@ class DataFile:
                 time = float(time)
                 self.data.append(Data(index, time))
 
-        while self.data[-1].time > 1.:
+        while self.data[-2].time > 1.:
             self.data.pop()
 
     @classmethod
@@ -72,7 +72,7 @@ def generate_plot_anim(stats: dict[str, DataFile], *, save_to: str = None):
                 hi = mid
             else:
                 lo = mid
-        return hi
+        return hi + (hi < len(data))
 
     def update(step: int, ax: plt.Axes, stats: dict[str, DataFile], algs: list[str],
                lines: list[plt.Line2D], lengths: list[int]):
@@ -86,7 +86,7 @@ def generate_plot_anim(stats: dict[str, DataFile], *, save_to: str = None):
             lines[i].set_data(xs, ys)
             xmax = max(0, xmax, *xs)
 
-        ax.set_xlim(0, xmax+1)
+        ax.set_xlim(0, xmax*1.1)
         return lines
 
     fig, ax = plt.subplots()
@@ -108,7 +108,7 @@ def generate_plot_anim(stats: dict[str, DataFile], *, save_to: str = None):
     for alg in algs:
         line, = ax.plot([], [], label=f"{alg}", color=stats[alg].colour, linestyle=stats[alg].style)
         lines.append(line)
-        print(f"{alg:>{max(map(len, algs))}}: {stats[alg].data[-1].index}")
+        print(f"{alg:>{max(map(len, algs))}}: {stats[alg].data[-2].index}")
 
     ax.legend(loc="center left", bbox_to_anchor=(1.05, 0.5))
     ax.set_xlabel("Fibonacci index")
@@ -125,6 +125,14 @@ def generate_plot_anim(stats: dict[str, DataFile], *, save_to: str = None):
         # ))
         anim.save(f"{save_to}.mp4", writer=animation.FFMpegWriter(fps=60, bitrate=4000, metadata=dict(artist="GSheaf")))
         fig.savefig(f"{save_to}.png", dpi=600)
+        with open(f"{save_to}.md", 'w') as file:
+            file.write("| Algorithm | Fibonacci index |\n")
+            file.write("|:--------- | ---------------:|\n")
+            for alg in algs:
+                file.write("| {alg} | {stats} |\n".format(
+                    alg = alg,
+                    stats =f"{stats[alg].data[-1].index:,d}".replace(',', '\'')
+                ))
     else:
         plt.show()
 

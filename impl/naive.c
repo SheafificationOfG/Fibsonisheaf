@@ -2,23 +2,18 @@
 
 #define GENEROUS_BYTE_LIMIT sizeof(uint64_t)
 
-void fibonacci_naive(uint64_t index, uint64_t *result)
+uint64_t fibonacci_naive(uint64_t index)
 {
     if (index <= 1)
     {
-        *result = index;
-        return;
+        return index;
     }
-
-    uint64_t a, b;
-    fibonacci_naive(index-1, &a);
-    fibonacci_naive(index-2, &b);
-    *result = a + b;
+    return fibonacci_naive(index-1) + fibonacci_naive(index-2);
 }
 
-void fibonacci(uint64_t index, void **result, size_t *length)
+struct number fibonacci(uint64_t index)
 {
-    *length = GENEROUS_BYTE_LIMIT;
-    *result = calloc(1, GENEROUS_BYTE_LIMIT);
-    fibonacci_naive(index, *result);
+    uint64_t *bytes = calloc(1, GENEROUS_BYTE_LIMIT);
+    *bytes = fibonacci_naive(index);
+    return (struct number){ bytes, GENEROUS_BYTE_LIMIT };
 }

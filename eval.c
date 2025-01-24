@@ -25,15 +25,14 @@ struct timespec soft_cutoff = { SOFT_CUTOFF_SEC, SOFT_CUTOFF_NSEC };
 struct timespec hard_cutoff = { HARD_CUTOFF_SEC, HARD_CUTOFF_NSEC };
 
 struct fibonacci_args {
-    unsigned long long index;
-    void *result;
-    size_t length;
+    long long unsigned index;
+    struct number result;
     struct timespec duration;
     int thread_completed;
 };
 
-int less(struct timespec *lhs, struct timespec *rhs);
-void report(struct fibonacci_args const *args);
+int less(struct timespec const *const lhs, struct timespec const *const rhs);
+void report(struct fibonacci_args const *const args);
 void *measure_fibonacci_call(void *fib_args);
 struct fibonacci_args evaluate_fibonacci(uint64_t index);
 
@@ -57,14 +56,14 @@ int main()
             struct fibonacci_args args = evaluate_fibonacci(cur_idx);
             if (!args.thread_completed || !less(&args.duration, &soft_cutoff))
             {
-                free(args.result);
+                free(args.result.bytes);
                 goto print_result;
             }
 
-            uint64_t result = *(uint64_t *)args.result;
-            if (args.length < sizeof(uint64_t))
+            uint64_t result = *(uint64_t *)args.result.bytes;
+            if (args.result.length < sizeof(uint64_t))
             {
-                result &= (1ull << (args.length * CHAR_BIT)) - 1;
+                result &= (1ull << (args.result.length * CHAR_BIT)) - 1;
             }
             if (result != a)
             {
@@ -79,7 +78,7 @@ int main()
                 best_idx = cur_idx;
             }
 
-            free(args.result);
+            free(args.result.bytes);
 
             tmp = a + b;
             a = b;
@@ -92,7 +91,7 @@ int main()
         for (; cur_idx <= SECOND_CHECKPOINT; ++cur_idx)
         {
             struct fibonacci_args args = evaluate_fibonacci(cur_idx);
-            free(args.result);
+            free(args.result.bytes);
             if (!args.thread_completed || !less(&args.duration, &soft_cutoff))
             {
                 goto print_result;
@@ -110,7 +109,7 @@ int main()
     do
     {
         struct fibonacci_args args = evaluate_fibonacci(cur_idx);
-        free(args.result);
+        free(args.result.bytes);
         if (!args.thread_completed || !less(&args.duration, &hard_cutoff))
         {
             break;
@@ -136,7 +135,7 @@ int main()
         {
             cur_idx += delta;
             struct fibonacci_args args = evaluate_fibonacci(cur_idx);
-            free(args.result);
+            free(args.result.bytes);
             if (cur_idx > best_idx && (!args.thread_completed || !less(&args.duration, &soft_cutoff)))
             {
                 break;
@@ -152,25 +151,25 @@ int main()
 
 print_result:
 
-    printf("# Recorded best: %llu\n",
+    fprintf(stderr, "# Recorded best: %llu\n",
             (long long unsigned)best_idx);
 
     return EXIT_SUCCESS;
 }
 
-int less(struct timespec *lhs, struct timespec *rhs)
+int less(struct timespec const *const lhs, struct timespec const *const rhs)
 {
     return lhs->tv_sec < rhs->tv_sec
         || (lhs->tv_sec == rhs->tv_sec && lhs->tv_nsec < rhs->tv_nsec);
 }
 
-void report(struct fibonacci_args const *args)
+void report(struct fibonacci_args const *const args)
 {
     printf("%20llu | %llu.%09llus | %llu B\n",
         (long long unsigned)args->index,
         (long long unsigned)args->duration.tv_sec,
         (long long unsigned)args->duration.tv_nsec,
-        (long long unsigned)args->length
+        (long long unsigned)args->result.length
     );
 }
 
@@ -181,7 +180,7 @@ void *measure_fibonacci_call(void *fib_args)
     struct timespec start_time;
     clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start_time);
 
-    fibonacci(args->index, &args->result, &args->length);
+    args->result = fibonacci(args->index);
 
     struct timespec end_time;
     clock_gettime(CLOCK_THREAD_CPUTIME_ID, &end_time);
@@ -194,7 +193,18 @@ void *measure_fibonacci_call(void *fib_args)
 
 struct fibonacci_args evaluate_fibonacci(uint64_t index)
 {
-    struct fibonacci_args args = { index, NULL, 0, { 0, 0 }, 0 };
+    struct fibonacci_args args = {
+        .index = index,
+        .result = {
+            .bytes = NULL,
+            .length = 0,
+        },
+        .duration = {
+            .tv_sec = 0,
+            .tv_nsec = 0,
+        },
+        .thread_completed = 0,
+    };
 
     pthread_t thread;
     pthread_create(&thread, NULL, measure_fibonacci_call, &args);
@@ -225,10 +235,10 @@ struct fibonacci_args evaluate_fibonacci(uint64_t index)
     pthread_join(thread, NULL);
 
     // invalidate arg values, and maybe cleanup
-    if (args.result)
+    if (args.result.bytes)
     {
-        free(args.result);
-        args.result = NULL;
+        free(args.result.bytes);
+        args.result.bytes = NULL;
     }
     args.thread_completed = 0;
     return args;

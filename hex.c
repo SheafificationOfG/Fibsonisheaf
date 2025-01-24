@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     unsigned long long index = strtoull(argv[1], &endptr, 10);
     if (*endptr != '\0')
     {
-        fprintf(stderr, "Failed to interpret %s as an integer.", argv[1]);
+        fprintf(stderr, "Failed to interpret %s as an integer.\n", argv[1]);
         return EXIT_FAILURE;
     }
 
@@ -33,9 +33,9 @@ int main(int argc, char *argv[])
     struct timespec start_time;
     clock_gettime(CLOCK, &start_time);
 
-    uint8_t *result;
-    size_t length;
-    fibonacci(index, (void *)&result, &length);
+    struct number result = fibonacci(index);
+    uint8_t *bytes = result.bytes;
+    size_t length = result.length;
 
     struct timespec end_time;
     clock_gettime(CLOCK, &end_time);
@@ -50,11 +50,11 @@ int main(int argc, char *argv[])
 
     do
     {
-        fprintf(output_file, "%02x", result[--length]);
+        fprintf(output_file, "%02x", bytes[--length]);
     }
     while (length);
 
-    free(result);
+    free(bytes);
 
     if (argc == 3)
     {

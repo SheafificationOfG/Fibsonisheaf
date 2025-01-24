@@ -9,7 +9,7 @@
 #define DIGIT_BIT (CHAR_BIT * sizeof(DIGIT))
 
 // (crudely) approximates the number of digits necessary to store the "index"th Fibonacci number
-static size_t ndigit_estimate(uint64_t index)
+static size_t ndigit_estimate(uint64_t const index)
 {
     // Simple induction implies that the nth Fibonacci number fits in (n-1) bits (so long as n > 1).
     // Moreover, add another digit for writing the final "carry" digit (even if that digit is zero).
@@ -18,7 +18,9 @@ static size_t ndigit_estimate(uint64_t index)
 
 // computes a += b
 // returns 1 if a + b carries
-static unsigned accumulate(DIGIT *a, DIGIT const *b, size_t ndigits)
+static unsigned accumulate(
+        DIGIT *restrict a,
+        DIGIT const *const b, size_t const ndigits)
 {
     unsigned carry = 0;
     for (size_t offset = 0; offset < ndigits; ++offset)
@@ -39,15 +41,16 @@ static void swap(DIGIT **lhs, DIGIT **rhs)
     *rhs = tmp;
 }
 
-void fibonacci(uint64_t index, void **result, size_t *length)
+struct number fibonacci(uint64_t index)
 {
-    size_t ndigits_max = ndigit_estimate(index);
-    debug("Allocating %llu digits of size %llu.\n",
+    size_t const ndigits_max = ndigit_estimate(index);
+    log("Allocating %llu digits of size %llu.\n",
             (long long unsigned)ndigits_max,
             (long long unsigned)sizeof(DIGIT));
 
-    *result = calloc(2 * ndigits_max, sizeof(DIGIT));
-    DIGIT *cur = *result;
+    struct number result;
+    result.bytes = calloc(2 * ndigits_max, sizeof(DIGIT));
+    DIGIT *cur = result.bytes;
     DIGIT *next = &cur[ndigits_max];
     *next = 1;
 
@@ -58,7 +61,8 @@ void fibonacci(uint64_t index, void **result, size_t *length)
         swap(&cur, &next);
     }
 
-    *length = ndigits * sizeof(DIGIT);
-    memcpy(*result, cur, *length);
+    result.length = ndigits * sizeof(DIGIT);
+    memcpy(result.bytes, cur, result.length);
+    return result;
 }
 
