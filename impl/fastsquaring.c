@@ -159,13 +159,17 @@ struct number fibonacci(uint64_t index)
     uint64_t mask = msb(index);
 
     struct number result;
-    result.bytes = calloc(2 * TUPLE_LEN * ndigits_max, sizeof(DIGIT));
+    result.bytes = calloc(2 * TUPLE_LEN * ndigits_max * sizeof(DIGIT) + 128, 1);
 
 #   define A(ptr) &(ptr)[0]
 #   define B(ptr) &(ptr)[ndigits_max]
-
-    DIGIT *fib = result.bytes;
-    DIGIT *scratch = &fib[TUPLE_LEN * ndigits_max];
+    // align each to their own individual cacheline
+    DIGIT *fib = (DIGIT *)((uintptr_t)result.bytes + 64) & (~(uintptr_t)0x3f);
+    uintptr_t fib_cacheline = (((uintptr_t)fib) >> 6) & 0x7;
+    
+    DIGIT *scratch = (DIGIT *)(((uintptr_t)fib) + TUPLE_LEN * ndigits_max * sizeof(DIGIT));
+    uintptr_t scratch_cacheline = (((uintptr_t)fib) >> 6) & 0x7;
+    scratch = (fib_cacheline == scratch_cacheline) ? (DIGIT *)((uintptr_t)scratch + 64) & (~(uintptr_t)0x3f) : scratch;
 
     size_t fib_len = 1;
 
