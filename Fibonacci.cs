@@ -1,7 +1,7 @@
 //
 //  15 million, C#, 40 lines, no optimisation, out of the box libraries
 //
-//  This algorithm uses the doubling algorithm with precomputation, caching, threading and recurrion
+//  This algorithm uses the doubling algorithm with precomputation, caching, threading and recursion
 //
 //  This would be a good place to _start_ optimisation
 //
