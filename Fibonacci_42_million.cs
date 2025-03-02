@@ -88,7 +88,6 @@ namespace Fibonacci
                 Task.Run(() => { ac = Karatsuba(a); }),
                 Task.Run(() => { bd = Karatsuba(b); }),
                 Task.Run(() => { abcd = Karatsuba(a + b); }),
-
             ];
             Task.WaitAll(task);
 
