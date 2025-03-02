@@ -39,7 +39,7 @@ namespace Fibonacci
             ];
             Task.WaitAll(task);
 
-            return ac + (abcd << (n + 1)) + (bd << 2 * n);
+            return ac + (abcd << n + 1) + (bd << 2 * n);
         }
 
         static BigInteger Karatsuba(BigInteger x)
@@ -64,7 +64,7 @@ namespace Fibonacci
             ];
             Task.WaitAll(task);
 
-            return ac + (abcd << (n + 1)) + (bd << 2 * n);
+            return ac + (abcd << n + 1) + (bd << 2 * n);
         }
 
         static BigInteger Fibonacci(ulong n)
