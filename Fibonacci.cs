@@ -18,7 +18,7 @@ namespace Fibonacci
 
         static Dictionary<ulong, BigInteger> cache = new();
 
-        static BigInteger Fibonacci(BigInteger x, BigInteger y)
+        static BigInteger Fibonacci(ulong n)
         {
             if (n < (ulong)small.Length)
             {
@@ -36,8 +36,8 @@ namespace Fibonacci
 
                 Task[] task =
                 [
-                    Task.Run(() => { Fk = Fibonacci(k); }),
-                    Task.Run(() => { Fkp1 = Fibonacci(k + 1); }),
+                    Task.Run(() => { Fk = DivideThreadCache(k); }),
+                    Task.Run(() => { Fkp1 = DivideThreadCache(k + 1); }),
                 ];
                 Task.WaitAll(task);
 
