@@ -1,5 +1,5 @@
 //
-//  42 million, C#, 100 lines, out of the box libraries...
+//  42 million per sec, C#, 100 lines, out of the box libraries...
 //
 //  This algorithm uses the doubling algorithm with Karatsuba multiplication, precomputation, caching, threading and recursion
 //
@@ -22,7 +22,7 @@ namespace Fibonacci
 
             if (n <= CUTOFF) return x * y;
 
-            n = (n + 1) >> 1;
+            n = (n + 1) / 2;
 
             BigInteger b = x >> n;
             BigInteger a = x - (b << n);
@@ -39,16 +39,16 @@ namespace Fibonacci
             ];
             Task.WaitAll(task);
 
-            return ac + (abcd << (n + 1)) + (bd << (n << 1));
+            return ac + (abcd << (n + 1)) + (bd << 2 * n);
         }
 
-        static BigInteger KaratsubaSquare(BigInteger x)
+        static BigInteger Karatsuba(BigInteger x)
         {
             int n = x.ToByteArray().Length * 8;
 
             if (n <= CUTOFF) return x * x;
 
-            n = (n + 1) >> 1;
+            n = (n + 1) / 2;
 
             BigInteger b = x >> n;
             BigInteger a = x - (b << n);
@@ -57,14 +57,14 @@ namespace Fibonacci
 
             Task[] task =
             [
-                Task.Run(() => { ac = KaratsubaSquare(a); }),
-                Task.Run(() => { bd = KaratsubaSquare(b); }),
-                Task.Run(() => { abcd = KaratsubaSquare(a + b); }),
+                Task.Run(() => { ac = Karatsuba(a); }),
+                Task.Run(() => { bd = Karatsuba(b); }),
+                Task.Run(() => { abcd = Karatsuba(a + b); }),
 
             ];
             Task.WaitAll(task);
 
-            return ac + (abcd << (n + 1)) + (bd << (n << 1));
+            return ac + (abcd << (n + 1)) + (bd << 2 * n);
         }
 
         static BigInteger Fibonacci(ulong n)
@@ -86,7 +86,7 @@ namespace Fibonacci
                 }
                 else
                 {
-                    result = KaratsubaSquare(Fkp1) + KaratsubaSquare(Fk);
+                    result = Karatsuba(Fkp1) + Karatsuba(Fk);
                 }
 
                 cache[n] = result;
