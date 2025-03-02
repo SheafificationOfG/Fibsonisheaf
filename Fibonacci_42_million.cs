@@ -46,7 +46,7 @@ namespace Fibonacci
         
         static BigInteger Karatsuba(BigInteger x, BigInteger y)
         {
-            int n = Math.Max(x.ToByteArray().Length * 8, y.ToByteArray().Length * 8);
+            int n = (int)Math.Max(x.GetBitLength(), y.GetBitLength());
 
             if (n <= CUTOFF) return x * y;
 
@@ -72,7 +72,7 @@ namespace Fibonacci
 
         static BigInteger Karatsuba(BigInteger x)
         {
-            int n = x.ToByteArray().Length * 8;
+            int n = (int)x.GetBitLength();
 
             if (n <= CUTOFF) return x * x;
 
