@@ -36,8 +36,8 @@ namespace Fibonacci
 
                 Task[] task =
                 [
-                    Task.Run(() => { Fk = DivideThreadCache(k); }),
-                    Task.Run(() => { Fkp1 = DivideThreadCache(k + 1); }),
+                    Task.Run(() => { Fk = Fibonacci(k); }),
+                    Task.Run(() => { Fkp1 = Fibonacci(k + 1); }),
                 ];
                 Task.WaitAll(task);
 
