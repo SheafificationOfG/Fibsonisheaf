@@ -18,7 +18,7 @@ namespace Fibonacci
 
         static Dictionary<ulong, BigInteger> cache = new();
 
-        static BigInteger Karatsuba(BigInteger x, BigInteger y)
+        static BigInteger Fibonacci(BigInteger x, BigInteger y)
         {
             if (n < (ulong)small.Length)
             {
