@@ -16,6 +16,34 @@ namespace Fibonacci
 
         static Dictionary<ulong, BigInteger> cache = new();
 
+        static BigInteger Fibonacci(ulong n)
+        {
+            if (n < (ulong)small.Length)
+            {
+                return small[n];
+            }
+            else
+            {
+                if (cache.ContainsKey(n)) return cache[n];
+
+                ulong k = n / 2;
+                BigInteger Fk = Fibonacci(k), Fkp1 = Fibonacci(k + 1), result;
+
+                if (n % 2 == 0)
+                {
+                    result = Karatsuba(Fk, 2 * Fkp1 - Fk);
+                }
+                else
+                {
+                    result = Karatsuba(Fkp1) + Karatsuba(Fk);
+                }
+
+                cache[n] = result;
+
+                return result;
+            }
+        }
+        
         static BigInteger Karatsuba(BigInteger x, BigInteger y)
         {
             int n = Math.Max(x.ToByteArray().Length * 8, y.ToByteArray().Length * 8);
@@ -65,34 +93,6 @@ namespace Fibonacci
             Task.WaitAll(task);
 
             return ac + (abcd << n + 1) + (bd << 2 * n);
-        }
-
-        static BigInteger Fibonacci(ulong n)
-        {
-            if (n < (ulong)small.Length)
-            {
-                return small[n];
-            }
-            else
-            {
-                if (cache.ContainsKey(n)) return cache[n];
-
-                ulong k = n / 2;
-                BigInteger Fk = Fibonacci(k), Fkp1 = Fibonacci(k + 1), result;
-
-                if (n % 2 == 0)
-                {
-                    result = Karatsuba(Fk, 2 * Fkp1 - Fk);
-                }
-                else
-                {
-                    result = Karatsuba(Fkp1) + Karatsuba(Fk);
-                }
-
-                cache[n] = result;
-
-                return result;
-            }
         }
     }
 }
