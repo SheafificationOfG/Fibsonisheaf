@@ -87,8 +87,6 @@ namespace Fibonacci
 
             n = (n + 2) / 3;
 
-            if (n <= 2) return _p * _q;
-
             BigInteger _base = 1; _base <<= n;
 
             BigInteger[] p = Extract(n, _base - 1, _p), q = Extract(n, _base - 1, _q);
@@ -137,8 +135,6 @@ namespace Fibonacci
             if (n <= TOOMCOOK_CUTOFF) return _p * _p;
 
             n = (n + 2) / 3;
-
-            if (n <= 2) return _p * _p;
 
             BigInteger _base = 1; _base <<= n;
 
