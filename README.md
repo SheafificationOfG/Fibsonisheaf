@@ -56,7 +56,7 @@ If you don't jive with hex, you can convert the hex output with `scripts/hex2dec
 By default, `hex2dec` prints out at most 32 significant digits.
 To print *all* digits, pass `-n0` or `--ndigits=0` as an argument.
 
-### Finetuning
+### Configuring builds
 
 The current algorithms have defaults that make the most sense on my hardware, but you can override some settings from `make`.
 
@@ -116,6 +116,11 @@ If you provide `--output=foobar`, then the plot animation will be saved to `foob
 
 > [!IMPORTANT]
 > The `anim` script requires `matplotlib`, and `ffmpeg` (for saving `.mp4`s).
+
+### Issues
+
+- The default compiler is `clang-18`, because I like the taste of iron (and for other reasons), but this may not work on ARM64; see issue #1.
+  The build should be fine with `gcc`, though.
 
 # Algorithms
 
