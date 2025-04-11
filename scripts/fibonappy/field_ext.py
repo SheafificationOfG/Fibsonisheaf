@@ -1,4 +1,3 @@
-
 def fibonacci(n: int) -> int:
     if n <= 1:
         return n
@@ -11,15 +10,16 @@ def fibonacci(n: int) -> int:
     while n:
         if n & 1:
             a, b = (
-                (a*sa + 5*b*sb) >> 1,
-                (a*sb + b*sa) >> 1,
+                (a * sa + 5 * b * sb) >> 1,
+                (a * sb + b * sa) >> 1,
             )
         sa, sb = (
-            (sa**2 + 5*sb**2) >> 1,
-            sa*sb,
+            (sa**2 + 5 * sb**2) >> 1,
+            sa * sb,
         )
         n >>= 1
     return b
+
 
 if __name__ == "__main__":
     from . import argparser, main

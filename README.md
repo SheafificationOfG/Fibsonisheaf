@@ -14,9 +14,12 @@ F_n = \begin{cases}
 
 ## Videos
 
+#### Python laid waste to my C++!
 [![Python laid waste to my C++!](https://img.youtube.com/vi/02rh1NjJLI4/0.jpg)](https://youtu.be/02rh1NjJLI4)
-
+#### I'm not sorry for switching to C
 [![I'm not sorry for switching to C](https://img.youtube.com/vi/LXm6ygZ3h7A/0.jpg)](https://youtu.be/LXm6ygZ3h7A)
+#### What does BLAZINGLY FAST even mean??
+[![What does BLAZINGLY FAST even mean??](https://img.youtube.com/vi/u24AjKinHNU/0.jpg)](https://youtu.be/u24AjKinHNU)
 
 ## Usage
 
@@ -52,6 +55,23 @@ If you don't jive with hex, you can convert the hex output with `scripts/hex2dec
 
 By default, `hex2dec` prints out at most 32 significant digits.
 To print *all* digits, pass `-n0` or `--ndigits=0` as an argument.
+
+### Finetuning
+
+The current algorithms have defaults that make the most sense on my hardware, but you can override some settings from `make`.
+
+```bash
+# CC: C compiler
+# PY: Python interpreter
+# DEFINES: C macro definitions
+#   (e.g., DIGIT_BIT: number of bits in a single "digit"
+#    of the large integer representation)
+# FLAGS: C compiler flags
+# AUTOHEADER_FLAGS: Flags passed to the header autogenerator
+make CC=gcc-14 PY=python3.14 DEFINES="DEBUG DIGIT_BIT=$(bits)" FLAGS="-g" AUTOHEADER_FLAGS="--verbose" bin/$(whatever).out
+```
+
+There are, of course, other flags.
 
 ### Plotting performance
 
@@ -89,7 +109,7 @@ To plot the data, a prerequisite is a configuration JSON file, having the follow
 You should then be able to run
 
 ```bash
-python3 scripts/anim.py path/to/your.json
+python3 scripts/anim.py $(config).json
 ```
 
 If you provide `--output=foobar`, then the plot animation will be saved to `foobar.mp4`, and the final plot to `foobar.png`.
@@ -101,12 +121,13 @@ If you provide `--output=foobar`, then the plot animation will be saved to `foob
 
 The project includes the following implementations.
 
-| Algorithm | Source (`impl/`) | Runtime |
-|:---------:|:----------------:|:-------:|
-| [Naive](#naive) | `naive.c` | $`\Omega(\exp(n))`$ |
-| ["Linear"](#linear) | `linear.c` | $`O(n^2)`$ |
-| [Fast exponentiation](#fast-exponentiation) | `fastexp{,2d}.c` | $`O(n^2)`$ |
-| [Fast squaring](#fast-squaring) | `fastsquaring.c` | $`O(n^2)`$ |
+| Algorithm | Source (`impl/`) | Runtime | Video |
+|:---------:|:----------------:|:-------:|:-----:|
+| [Naive](#naive) | `naive.c` | $`\Omega(\exp(n))`$ | - |
+| ["Linear"](#linear) | `linear.c` | $`O(n^2)`$ | [[1]](#python-laid-waste-to-my-c) |
+| [Fast exponentiation](#fast-exponentiation) | `fastexp{,2d}.c` | $`O(n^2)`$ | [[2]](#im-not-sorry-for-switching-to-c) |
+| [Fast squaring](#fast-squaring) | `fastsquaring.c` | $`O(n^2)`$ | [[2]](#im-not-sorry-for-switching-to-c) |
+| [NTT](#number-theoretic-transform) | `ntt{,t}.c` | $`O(n\log n)`$ [^1] | [[3]](#what-does-blazingly-fast-even-mean) |
 
 ## Naive
 
@@ -118,10 +139,6 @@ def naive(n):
         return n
     return fib(n-1) + fib(n-2)
 ```
-
-> [!WARNING]
-> I feel required to tell you that the algorithm will only correctly compute $`F_n`$ for $`n\leq93`$.
-> Fibonacci terms that do not fit in 64 bits are expressly not supported.
 
 ## "Linear"
 
@@ -284,6 +301,46 @@ a
 \end{bmatrix}
 ```
 
+## Number-theoretic transform
+
+I've embarrassed myself enough with Karatsuba's multiplication algorithm before, so let's just fast-fourierward to an $`O(n\log n)`$ multiplication algorithm[^1].
+
+[^1]: It's not actually $`O(n\log n)`$, unless you like incorrect algorithms as $`n\to\infty`$.
+
+The idea is pretty convoluted :smirk:.
+We will represent our large integers in base $`B = 2^b`$ (by default, $`B = 2^{32}`$).
+
+Suppose we are multiplying two large integers, written out as $`N`$ -digit integers:
+
+```math
+\begin{align*}
+    x &= \sum_{0\leq i < N} x_iB^i \\
+    y &= \sum_{0\leq j < N} y_jB^j
+\end{align*}
+```
+
+Then, observe that their product $`z := x\cdot y`$ is a $`\leq2N`$ -digit integer whose "improper digits" are the result of convolving the digits of $`x`$ with the digits of $`y`$:
+
+```math
+z_m = \left(\sum_{i+j=m}x_iy_j\right)B^m
+```
+Note that these "digits" don't necessarily fit in the interval $`[0, B-1]`$.
+
+Through a Fourier transform, we can convert these convolutions into digit-wise products in the frequency domain.
+With $`\omega_{2N}`$ a primitive $`2N`$ -th root of unity, let
+
+```math
+\hat x_k := \sum_{0\leq i<2N}x_i\omega_{2N}^{-ki}
+```
+and similarly for $`\hat y_k`$ and $`\hat z_k`$.
+Then, $`\hat z_k = \hat x_k\cdot\hat y_k`$, and we can recover $`z_m`$ with an inverse Fourier transform:
+
+```math
+2Nz_m = \sum_{0\leq k<2N}\hat z_k\omega_{2N}^{+km}
+```
+
+Normally, the idea is to embed the digits into the complex numbers, and then take $`\omega_{2N} := \exp(-\frac{2\pi i}{2N})`$, but I'm not in the mood to roll out my own arbitrary-precision floats.
+Therefore, we work modulo a fixed prime $`p`$ such that $`2N`$ divides $`(p-1)`$.
 
 <!-- objdump -Mintel -d --visualize-jumps --no-show-raw-insn --no-addresses bin.out -->
 <!-- `x86asm` gives syntax highlighting in GitHub md (but requires Intel notation) -->

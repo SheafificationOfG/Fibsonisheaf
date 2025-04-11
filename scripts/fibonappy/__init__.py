@@ -2,9 +2,10 @@ import typing
 
 # field_ext implementation in Python
 
+
 def main(fname: typing.Optional[str], n: int, fibonacci: typing.Callable[[int], int]):
-    import time
     import sys
+    import time
 
     start_time = time.time()
     fib = fibonacci(n)
@@ -13,7 +14,7 @@ def main(fname: typing.Optional[str], n: int, fibonacci: typing.Callable[[int], 
     if fname is None:
         fp = sys.stdout
     else:
-        fp = open(fname, 'w')
+        fp = open(fname, "w")
 
     fibhex = f"{fib:x}"
     print(f"# Runtime: {end_time-start_time:.9f}s", file=sys.stderr)
@@ -21,17 +22,23 @@ def main(fname: typing.Optional[str], n: int, fibonacci: typing.Callable[[int], 
     fp.write(fibhex)
 
     if fname is None:
-        fp.write('\n')
+        fp.write("\n")
     else:
         fp.close()
 
+
 def argparser():
     import argparse
+
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("n", metavar="INDEX", type=int,
-                        help="desired Fibonacci index")
-    parser.add_argument("fname", metavar="FILE", type=str, nargs='?',
-                        help="output file to store result (or stdout if not provided)")
+    parser.add_argument("n", metavar="INDEX", type=int, help="desired Fibonacci index")
+    parser.add_argument(
+        "fname",
+        metavar="FILE",
+        type=str,
+        nargs="?",
+        help="output file to store result (or stdout if not provided)",
+    )
 
     return parser

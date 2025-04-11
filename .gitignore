@@ -59,6 +59,7 @@ data/*
 bin/*
 obj/*
 asm/*
+autoheader/*
 
 # Editors
 *.swp
