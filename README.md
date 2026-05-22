@@ -14,11 +14,11 @@ F_n = \begin{cases}
 
 ## Videos
 
-#### Python laid waste to my C++!
+#### [Python laid waste to my C++!](https://youtu.be/02rh1NjJLI4)
 [![Python laid waste to my C++!](https://img.youtube.com/vi/02rh1NjJLI4/0.jpg)](https://youtu.be/02rh1NjJLI4)
-#### I'm not sorry for switching to C
+#### [I'm not sorry for switching to C](https://youtu.be/LXm6ygZ3h7A)
 [![I'm not sorry for switching to C](https://img.youtube.com/vi/LXm6ygZ3h7A/0.jpg)](https://youtu.be/LXm6ygZ3h7A)
-#### What does BLAZINGLY FAST even mean??
+#### [What does BLAZINGLY FAST even mean??](https://youtu.be/u24AjKinHNU)
 [![What does BLAZINGLY FAST even mean??](https://img.youtube.com/vi/u24AjKinHNU/0.jpg)](https://youtu.be/u24AjKinHNU)
 
 ## Usage
